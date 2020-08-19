@@ -1,0 +1,158 @@
+# Import the yfinance
+import yfinance as yf
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+operaciones = [['AXP', 151610700, 90, [2019, 10, 21]], 
+               ['KO', 400000000, 46, [2019, 10, 21]],
+               ['WFC', 449349102, 24, [2019, 10, 21]],
+               ['USB-PO', 146346999, 27, [2019, 10, 21]],
+               ['GS', 18784698, 200, [2019, 10, 21]],
+               ['CHTR', 6789054, 500, [2019, 10, 21]],
+               ['AAPL', 255300329, 350, [2019, 10, 21]],
+               ['DAL', 65535000, 25, [2019, 10, 21]],
+               ['LUV', 47890899, 30, [2019, 10, 21]],
+               ['UAL', 21938642, 35, [2019, 10, 21]],
+               ['BAC', 918919000, 20, [2019, 10, 21]],
+               ['BK', 84488751, 30, [2019, 10, 21]],
+               ['JPM', 50661394, 120, [2019, 10, 21]]
+              ]
+
+
+tickers = []
+acciones = []
+precio_operacion = []
+fecha_operacion = []
+
+for oper in operaciones:
+    tickers.append(oper[0])
+    acciones.append(oper[1])
+    precio_operacion.append(oper[2])
+    fecha_operacion.append(oper[3])
+    
+    
+# PRECIO LAST
+precios_last = []
+sectores = []
+country = []
+currency = []
+
+for ticker in tickers:
+    try:
+        precios_last.append(yf.Ticker(ticker).history(period="1d")['Close'][0])
+    except IndexError:
+        precios_last.append(0)
+        
+    try:
+        sectores.append(yf.Ticker(ticker).info['sector'])
+    except IndexError:
+        sectores.append(0)
+
+    try:
+        country.append(yf.Ticker(ticker).info['country'])
+    except IndexError:
+        country.append(0)
+        
+    try:
+        currency.append(yf.Ticker(ticker).info['currency'])
+    except IndexError:
+        currency.append(0) 
+        
+        
+        
+# valor posición
+valor = []
+for x in range(len(acciones)):
+    valor.append(acciones[x] * precios_last[x])
+    
+#valor total de las posiciones
+valor_tot = 0
+for posicion in valor:
+    valor_tot += posicion
+
+# % accion
+porcentaje = []
+for x in range(len(acciones)):
+    porcentaje.append((valor[x] / valor_tot) * 100)
+    
+# Ganancia / perdida PORCENTAJE %
+p_l_porc = []
+for x in range(len(acciones)):
+    p_l_porc.append(((precios_last[x] - precio_operacion[x]) / precio_operacion[x]) * 100)
+    
+# Ganancia / perdida CASH €$
+p_l_cash = []
+for x in range(len(acciones)):
+    p_l_cash.append(((precios_last[x] - precio_operacion[x]) * acciones[x]))
+    
+    
+    
+data = pd.DataFrame({'Ticker':tickers, 'Acciones':acciones, 'Country':country, 'Currency':currency, 
+                     'Porcentaje':porcentaje, 'Valor':valor, 'Sectores':sectores, 'Precio Compra':precio_operacion,
+                     'Precio':precios_last, '+/- %':p_l_porc, '+/- €':p_l_cash})
+
+data.index.name = 'Ticker'
+
+
+
+# EVOLUCION HIST
+
+precios_1wk = []
+precios_1mo = []
+precios_3mo = []
+
+for ticker in tickers:    
+    try:
+        precios_1wk.append(yf.Ticker(ticker).history(period="1wk")['Close'][0])
+    except IndexError:
+        precios_last.append(0)
+           
+    try:
+        precios_1mo.append(yf.Ticker(ticker).history(period="1mo")['Close'][0])
+    except IndexError:
+        precios_last.append(0)
+        
+    try:
+        precios_3mo.append(yf.Ticker(ticker).history(period="3mo")['Close'][0])
+    except IndexError:
+        precios_last.append(0)
+
+        
+        
+        
+# MAX MIN PERIODO
+
+max_1wk = []
+max_1mo = []
+max_3mo = []
+max_1yr = []
+min_1yr = []
+
+for ticker in tickers:
+    max_1wk.append(max(yf.Ticker(ticker).history(period="max", interval="1wk")['High']))
+    max_1mo.append(max(yf.Ticker(ticker).history(period="max", interval="1mo")['High']))
+    max_3mo.append(max(yf.Ticker(ticker).history(period="max", interval="3mo")['High']))
+
+    try:
+        max_1yr.append(yf.Ticker(ticker).info['fiftyTwoWeekHigh'])
+    except IndexError:
+        max_1yr.append(0)
+    try:
+        min_1yr.append(yf.Ticker(ticker).info['fiftyTwoWeekLow'])
+    except IndexError:
+        min_1yr.append(0)
+
+#print(max_1wk)
+#print(max_1mo)
+#print(max_3mo)
+#print(max_1yr)
+#print(min_1yr)     
+
+
+data2 = pd.DataFrame({'Ticker':tickers, 
+                     'P. Compra':precio_operacion,'Hoy':precios_last,
+                     '1wk':precios_1wk,'1wk':precios_1wk, '1mo':precios_1mo, '3mo':precios_3mo,
+                     'max1wk':max_1wk, 'max1mo':max_1mo, 'max3mo':max_3mo, 
+                     'max 1yr':max_1yr, 'mini 1yr':min_1yr})
