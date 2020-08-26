@@ -21,17 +21,17 @@ while operacion != 'x':
     
     operaciones_prueba.append(operacion.split())
  
-    # añadir datos al diccionario: AAPL V 1000 12 21/10/2019
+    # añadir datos al diccionario: AAPL V 1000 12 2020-08-12
     if operacion.split()[4] in operaciones_dict.keys():
         operaciones_dict[operacion.split()[4]].append([operacion.split()[0],
                                                                      operacion.split()[1],
                                                                      operacion.split()[2],
                                                                      operacion.split()[3]])
     else:
-        operaciones_dict[operacion.split()[4]] = [operacion.split()[0],
+        operaciones_dict[operacion.split()[4]] = ([[operacion.split()[0],
                                                    operacion.split()[1],
                                                    operacion.split()[2],
-                                                   operacion.split()[3]]
+                                                   operacion.split()[3]]])
     
     operacion = input('Ticker, tipo, nº, precio, fecha: ')
     
@@ -40,22 +40,26 @@ while operacion != 'x':
   #1_data_stocks  
   # LISTA TICKERS
 tickers_list = []
+tipo_operacion = []
 acciones = []
 precio_operacion = []
-tipo_operacion = []
+
+
 
 for dias in operaciones_dict.values():
     for operacion in dias:
         if operacion[0] not in tickers_list:
             tickers_list.append(operacion[0])
-            acciones.append(operacion[1])    
-            precio_operacion.append(operacion[2]) 
-            tipo_operacion.append(operacion[3])     
+            tipo_operacion.append(operacion[1])  
+            acciones.append(operacion[2])    
+            precio_operacion.append(operacion[3]) 
+   
             
 tickers_list = sorted(tickers_list)
 acciones = sorted(acciones)
 precio_operacion = sorted(precio_operacion)
 tipo_operacion = sorted(tipo_operacion)
+
 
 #lista con operaciones, acciones y fechas
 formato_fecha = "%Y-%m-%d"
@@ -119,11 +123,11 @@ for dia in range(diferencia.days):
             for dato in range(len(operaciones_dict[(fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d')])):              
                 ticker_operacion = operaciones_dict[(fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d')][dato][0]
                 tickers_dia.append(ticker_operacion)     
-                acciones_operacion = operaciones_dict[(fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d')][dato][1]
-                acciones_dia.append(acciones_operacion)                 
-                precios_operacion = operaciones_dict[(fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d')][dato][2]
-                precios_dia.append(precios_operacion)                 
-                tipo_operacion = operaciones_dict[(fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d')][dato][3]
+                acciones_operacion = operaciones_dict[(fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d')][dato][2]
+                acciones_dia.append(int(acciones_operacion))                 
+                precios_operacion = operaciones_dict[(fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d')][dato][3]
+                precios_dia.append(int(precios_operacion))                 
+                tipo_operacion = operaciones_dict[(fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d')][dato][1]
                 tipo_dia.append(tipo_operacion)
 
             # AÑADIR Nº ACCIONES (Compra / Venta)     
@@ -183,39 +187,34 @@ for ticker in tickers_list:
         currency.append(0) 
         
         
-        
-# valor posición
-valor = []
-for x in range(len(acciones)):
-    valor.append(acciones[x] * precios_last[x])
-    
-#valor total de las posiciones
-valor_tot = 0
-for posicion in valor:
-    valor_tot += posicion
+cantidad_acciones = [] # nº de acciones
+valor = [] # valor posición
+valor_tot = 0 #valor total de las posiciones
+porcentaje = [] # % accion
+p_l_porc = [] # Ganancia / perdida PORCENTAJE %
+p_l_cash = [] # Ganancia / perdida CASH €$
 
-# % accion
-porcentaje = []
-for x in range(len(acciones)):
+
+
+
+for x in range(len(num_acciones)):
+    cantidad_acciones.append(num_acciones[x][-1])
+    valor.append(int(acciones[x]) * precios_last[x])
+    p_l_porc.append(((int(precios_last[x]) - int(precio_operacion[x])) / int(precio_operacion[x])) * 100)
+    p_l_cash.append((int(precios_last[x]) - int(precio_operacion[x])) * int(acciones[x]))
+    
+for posicion in valor:
+    valor_tot += int(posicion)    
+    
+for x in range(len(num_acciones)):
     porcentaje.append((valor[x] / valor_tot) * 100)
     
-# Ganancia / perdida PORCENTAJE %
-p_l_porc = []
-for x in range(len(acciones)):
-    p_l_porc.append(((precios_last[x] - precio_operacion[x]) / precio_operacion[x]) * 100)
-    
-# Ganancia / perdida CASH €$
-p_l_cash = []
-for x in range(len(acciones)):
-    p_l_cash.append(((precios_last[x] - precio_operacion[x]) * acciones[x]))
-    
-    
-data = pd.DataFrame({'Acciones':tickers_list, 'Country':country, 'Currency':currency, 
+data = pd.DataFrame({'Acciones':tickers_list, 'Country':country, 'Currency':currency, 'nº':cantidad_acciones, 
                      '% Posición':porcentaje, 'Valor':valor, 'Sectores':sectores, 'Precio Compra':precio_operacion,
                      'Precio':precios_last, '+/- %':p_l_porc, '+/- €':p_l_cash}, index=(list(tickers_list)))
 
-#formato: https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html
-#data.style.format({'Porcentaje': '{:.2f}','+/- %': '{:.2f}', '+/- €': '{:.2f}'}, na_rep='-')
-#https://www.interactivechaos.com/python/scenario/aplicacion-de-colores-los-valores-de-un-dataframe-pandas
 
 data.index.name = 'Ticker'
+
+
+data
