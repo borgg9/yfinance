@@ -9,7 +9,6 @@ from datetime import *
 
 import scipy.stats as stats
 
-
 # 0_new_trades.py
 operaciones_prueba = [] 
 operacion = ''
@@ -34,17 +33,13 @@ while operacion != 'x':
                                                    operacion.split()[3]]])
     
     operacion = input('Ticker, tipo, nº, precio, fecha: ')
-    
-    
-    
+      
   #1_data_stocks  
   # LISTA TICKERS
 tickers_list = []
 tipo_operacion = []
 acciones = []
 precio_operacion = []
-
-
 
 for dias in operaciones_dict.values():
     for operacion in dias:
@@ -53,13 +48,11 @@ for dias in operaciones_dict.values():
             tipo_operacion.append(operacion[1])  
             acciones.append(operacion[2])    
             precio_operacion.append(operacion[3]) 
-   
-            
+              
 tickers_list = sorted(tickers_list)
 acciones = sorted(acciones)
 precio_operacion = sorted(precio_operacion)
 tipo_operacion = sorted(tipo_operacion)
-
 
 #lista con operaciones, acciones y fechas
 formato_fecha = "%Y-%m-%d"
@@ -73,7 +66,6 @@ fechas = []
 valor_precio_compra = [] 
 valor_mercado = []
 
-
 # lista de [] para cada ticker (numeoro diario de acciones)
 num_acciones = []
 for ticker in tickers_list:
@@ -82,8 +74,7 @@ for ticker in tickers_list:
 # lista de [] para cada ticker (valor de las acciones a precio de compra)
 valor_precio_compra = []
 for ticker in tickers_list:
-    valor_precio_compra.append([])
-    
+    valor_precio_compra.append([])    
     
 # LISTA DE FECHAS
 # Añadir un dia anterior a la fecha inicial con 0 acciones
@@ -102,8 +93,7 @@ for dia in range(diferencia.days):
         tickers_dia = []
         acciones_dia = []
         precios_dia = []
-        tipo_dia = []
-        
+        tipo_dia = []        
       
         for accion in range(len(num_acciones)):
             # añade 1 a cada dia y posicion
@@ -112,12 +102,12 @@ for dia in range(diferencia.days):
 
             # cambia el dia recien añadido por 2
             (num_acciones[accion][-1]) = (num_acciones[accion][-2])
-            (valor_precio_compra[accion][-1]) = (valor_precio_compra[accion][-2])    
-            
+            (valor_precio_compra[accion][-1]) = (valor_precio_compra[accion][-2])               
            
         # analiza si en el dia hay operaciones
         if (fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d') in operaciones_dict.keys():   
             lista_operaciones = operaciones_dict[(fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d')]
+            #lista_operaciones = [['AAPL', 'C', '1000', '12'], ['AAPL', 'C', '1000', '12'], ['JPM', 'C', '1000', '12']]
             
             # datos de la operacion
             for dato in range(len(operaciones_dict[(fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d')])):              
@@ -129,8 +119,8 @@ for dia in range(diferencia.days):
                 precios_dia.append(int(precios_operacion))                 
                 tipo_operacion = operaciones_dict[(fecha_inicial + timedelta(days =+ dia)).strftime('%Y-%m-%d')][dato][1]
                 tipo_dia.append(tipo_operacion)
-
-            # AÑADIR Nº ACCIONES (Compra / Venta)     
+                
+           # AÑADIR Nº ACCIONES (Compra / Venta)     
             for accion in range(len(num_acciones)):
                 if tickers_list[accion] in tickers_dia:
                     #posicion de la accion en la lista de operaciones del dia
@@ -147,8 +137,7 @@ for dia in range(diferencia.days):
                         valor_precio_compra[accion][-1] = (num_acciones[accion][-2]) + (acciones_dia[posicion_dia] * precios_dia[posicion_dia])
                     if tipo_dia[posicion_dia] == 'V': 
                         valor_precio_compra[accion][-1] = (num_acciones[accion][-2]) - (acciones_dia[posicion_dia] * precios_dia[posicion_dia])                      
-
-        
+   
 # TRASPONER LISTA Nº ACCIONES y VALOR COMPRA
 traspo_valor_precio_compra = np.array(valor_precio_compra).T
 traspo_num_acciones = np.array(num_acciones).T
@@ -158,7 +147,6 @@ df_valor_compra.index.name = 'Fechas'
 
 df_num_acciones = pd.DataFrame(traspo_num_acciones, columns=(list(tickers_list)), index=(list(fechas)))
 df_num_acciones.index.name = 'Fechas'
-
 
 precios_last = []
 sectores = []
@@ -185,17 +173,13 @@ for ticker in tickers_list:
         currency.append(yf.Ticker(ticker).info['currency'])
     except IndexError:
         currency.append(0) 
-        
-        
+          
 cantidad_acciones = [] # nº de acciones
 valor = [] # valor posición
 valor_tot = 0 #valor total de las posiciones
 porcentaje = [] # % accion
 p_l_porc = [] # Ganancia / perdida PORCENTAJE %
 p_l_cash = [] # Ganancia / perdida CASH €$
-
-
-
 
 for x in range(len(num_acciones)):
     cantidad_acciones.append(num_acciones[x][-1])
@@ -209,12 +193,8 @@ for posicion in valor:
 for x in range(len(num_acciones)):
     porcentaje.append((valor[x] / valor_tot) * 100)
     
-data = pd.DataFrame({'Acciones':tickers_list, 'Country':country, 'Currency':currency, 'nº':cantidad_acciones, 
-                     '% Posición':porcentaje, 'Valor':valor, 'Sectores':sectores, 'Precio Compra':precio_operacion,
+data = pd.DataFrame({'Country':country, 'Currency':currency, 'nº':cantidad_acciones, 
+                     '% Posición':porcentaje, 'Valor':valor, 'Sector':sectores, 'Precio Compra':precio_operacion,
                      'Precio':precios_last, '+/- %':p_l_porc, '+/- €':p_l_cash}, index=(list(tickers_list)))
-
-
 data.index.name = 'Ticker'
-
-
 data
