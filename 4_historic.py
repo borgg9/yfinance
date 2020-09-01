@@ -348,9 +348,27 @@ for dia in range(len(fechas)):
     # VALOR DE MERCADO: suma valor de mercado de todas las posiciones en el dia
     valor_mercado.append(sum(df_valor_mercado.iloc[dia]))                 
 
+# rent diaria % valor de mercado
+ret_dia_porc = []
+ret_dia_porc.append(0)
+ret_dia_porc.append(0)
+for dia in range(len(valor_mercado) - 2):
+    try:
+        ret_dia_porc.append(((valor_mercado[dia + 2] - valor_mercado[dia + 2 - 1]) / valor_mercado[dia + 2 - 1]) * 100)
+    except:
+        ret_dia_porc.append(0)
+
+# ganancia diaria € valor de mercado
+ret_dia_cash = []
+ret_dia_cash.append(0)
+ret_dia_cash.append(0)
+for dia in range(len(valor_mercado) - 2):
+    ret_dia_cash.append((valor_mercado[dia + 2] - valor_mercado[dia + 2 - 1]))
+
 df_total['Valor Compra'] = valor_precio_compra
 df_total['Valor Mercado'] = valor_mercado
+df_total['+/- %'] = ret_dia_porc
+df_total['+/- €'] = ret_dia_cash
 
-# valor diario de los activos de la cartera, valor de compra y de mercado
+# valor diario de los activos de la cartera, valor de compra, valor de mercado y rent % €
 df_total
-
