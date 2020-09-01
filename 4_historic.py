@@ -358,7 +358,7 @@ for dia in range(len(valor_mercado) - 2):
     except:
         ret_dia_porc.append(0)
 
-# ganancia diaria € valor de mercado
+# ganancia/perdida diaria € valor de mercado
 ret_dia_cash = []
 ret_dia_cash.append(0)
 ret_dia_cash.append(0)
